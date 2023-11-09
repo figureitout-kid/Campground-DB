@@ -1,6 +1,9 @@
 package com.techelevator.dao;
 
+import com.techelevator.exception.DaoException;
 import com.techelevator.model.Campground;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
@@ -18,13 +21,40 @@ public class JdbcCampgroundDao implements CampgroundDao {
 
     @Override
     public Campground getCampgroundById(int id) {
-        return null;
+        Campground campground = null;
+        String sql = "SELECT campground_id, park_id, name, open_from_mm, open_to_mm, daily_fee FROM campground WHERE campground_id = ?;";
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id);
+            if (results.next()) {
+                campground = mapRowToCampground(results);
+            }
+        } catch (CannotGetJdbcConnectionException e) {
+            throw new DaoException("Unable to connect", e);
+        } catch (DataIntegrityViolationException e) {
+            throw new DaoException("Data integrity violation", e);
+        }
+        return campground;
     }
 
     @Override
     public List<Campground> getCampgroundsByParkId(int parkId) {
-        return new ArrayList<>();
+        List<Campground> campground = new ArrayList<>();
+        String sql = "SELECT * FROM campground WHERE park_id = ?;";
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, parkId);
+            while (results.next()) {
+                Campground camps = mapRowToCampground(results);
+                campground.add(camps);
+            }
+        } catch (CannotGetJdbcConnectionException e) {
+            throw new DaoException("Unable to connect", e);
+        } catch (DataIntegrityViolationException e) {
+            throw new DaoException("Data integrity violation", e);
+        }
+        return campground;
     }
+
+
 
     private Campground mapRowToCampground(SqlRowSet results) {
         Campground campground = new Campground();

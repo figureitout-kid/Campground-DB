@@ -22,7 +22,20 @@ public class JdbcParkDao implements ParkDao {
 
     @Override
     public List<Park> getParks() {
-        return new ArrayList<>();
+        List<Park> parks = new ArrayList<>();
+        String sql = "SELECT * FROM park ORDER BY location, name;";
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
+            while (results.next()) {
+                Park parkResult = mapRowToPark(results);
+                parks.add(parkResult);
+            }
+        } catch (CannotGetJdbcConnectionException e) {
+            throw new DaoException("Unable to connect to server or database", e);
+        } catch (DataIntegrityViolationException e) {
+            throw new DaoException("Data integrity violation", e);
+        }
+        return parks;
     }
 
     private Park mapRowToPark(SqlRowSet results) {

@@ -1,6 +1,10 @@
 package com.techelevator.dao;
 
+import com.techelevator.exception.DaoException;
+import com.techelevator.model.Campground;
 import com.techelevator.model.Reservation;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
@@ -16,14 +20,35 @@ public class JdbcReservationDao implements ReservationDao {
 
     @Override 
     public Reservation getReservationById(int id) {
-
-        return null;
+        Reservation reservations = null;
+        String sql = "SELECT * FROM reservation WHERE reservation_id = ?;";
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id);
+            if (results.next()) {
+                reservations = mapRowToReservation(results);
+            }
+        } catch (CannotGetJdbcConnectionException e) {
+            throw new DaoException("Unable to connect", e);
+        } catch (DataIntegrityViolationException e) {
+            throw new DaoException ("Data integrity violation found", e);
+        }
+        return reservations;
     }
 
     @Override
     public Reservation createReservation(Reservation reservation) {
+        Reservation newReservation = null;
+        String sql = "INSERT INTO reservation (site_id, name, from_date, to_date, create_date) VALUES (?, ?, ?, ?, ?) RETURNING reservation_id;";
+        try {
+            int reservationId = jdbcTemplate.queryForObject(sql, int.class, reservation.getSiteId(), reservation.getName(), reservation.getFromDate(), reservation.getToDate(), reservation.getCreateDate());
+            newReservation = getReservationById(reservationId);
 
-        return new Reservation();
+        } catch (CannotGetJdbcConnectionException e) {
+            throw new DaoException("Unable to connect", e);
+        } catch (DataIntegrityViolationException e) {
+            throw new DaoException("Data integrity violation found", e);
+        }
+        return newReservation;
     }
 
     private Reservation mapRowToReservation(SqlRowSet results) {

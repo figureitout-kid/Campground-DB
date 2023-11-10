@@ -21,13 +21,13 @@ public class JdbcSiteDaoTests extends BaseDaoTests {
 
     @Test
     public void getSitesWithRVAccessByParkId_Should_Return_Sites_With_Positive_RV_Length() {
-        Assert.fail();
+        List<Site> sites = dao.getSitesWithRVAccessByParkId(1);
+        assertEquals("Incorrect count of currently available sites", 2, sites.size());
     }
 
     @Test
     public void getSitesWithoutReservationByParkId_Should_Return_Available_Parks() {
         List<Site> sites = dao.getSitesWithoutReservationByParkId(1);
         assertEquals("Incorrect count of currently available sites", 5, sites.size());
-
     }
 }

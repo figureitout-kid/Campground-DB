@@ -1,5 +1,6 @@
 package com.techelevator.dao;
 
+import com.techelevator.model.Campground;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,7 +22,8 @@ public class JdbcReservationDaoTests extends BaseDaoTests {
 
     @Test
     public void getReservationById_Should_Return_Specific_Reservation() {
-        Assert.fail();
+        Reservation reservation = dao.getReservationById(1);
+        assertEquals("Incorrect campground returned for ID 1", 1, reservation.getReservationId());
     }
 
     @Test
